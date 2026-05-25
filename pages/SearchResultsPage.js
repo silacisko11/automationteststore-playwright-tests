@@ -22,9 +22,10 @@ class SearchResultsPage extends BasePage {
   }
 
   // Klikne na produkt a otvori jeho detail.
+  // waitUntil: 'domcontentloaded' - kvoli stabilite na Firefoxe (route.abort blokuje 'load').
   async openProduct(name) {
     await this.productLinks.filter({ hasText: name }).first().click();
-    await this.page.waitForURL(/product\/product/);
+    await this.page.waitForURL(/product\/product/, { waitUntil: 'domcontentloaded' });
   }
 
   async getProductCount() {

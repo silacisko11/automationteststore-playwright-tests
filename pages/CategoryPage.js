@@ -65,16 +65,17 @@ class CategoryPage extends BasePage {
   // pride navigacia s ?sort=...-ASC v URL.
   // Promise.all = spustim selectOption A SUCASNE cakam na URL change,
   // aby som nezmeskal navigaciu.
+  // waitUntil: 'domcontentloaded' - kvoli stabilite na Firefoxe (route.abort blokuje 'load').
   async sortBy(label) {
     await Promise.all([
-      this.page.waitForURL(/sort=.+-(ASC|DESC)/),
+      this.page.waitForURL(/sort=.+-(ASC|DESC)/, { waitUntil: 'domcontentloaded' }),
       this.sortDropdown.selectOption({ label }),
     ]);
   }
 
   async openProductByName(name) {
     await this.productLinks.filter({ hasText: name }).first().click();
-    await this.page.waitForURL(/product\/product/);
+    await this.page.waitForURL(/product\/product/, { waitUntil: 'domcontentloaded' });
   }
 }
 

@@ -13,22 +13,23 @@ class BasePage {
     this.cartCounter = page.locator('ul.topcart span.label.label-orange').first();
   }
 
-  // Vyhladanie cez header search.
-  // Stlacam Enter v inpute namiesto klikania na "Go", lebo to tlacidlo je <div>
-  // a klik na nom vo Firefoxe obcas neprejde - Enter je stabilnejsi.
+  // Vyhladanie cez priamu navigaciu na search URL.
+  // Povodne som klikal/Enter na search input, ale na Firefoxe v CI sa Enter
+  // event nezachytil a formular sa nesubmitoval - test padol na timeout.
+  // Priama navigacia na search URL je deterministicka a funguje rovnako
+  // vo vsetkych prehliadacoch.
+  // waitUntil: 'domcontentloaded' - kvoli route.abort() na 3rd-party trackeroch
+  // sa default 'load' event vo Firefoxe nemusi zavolat.
   async search(keyword) {
-    await this.searchInput.fill(keyword);
-    await this.searchInput.press('Enter');
-    await this.page.waitForURL(/rt=product\/search/);
+    const url = `/index.php?rt=product/search&keyword=${encodeURIComponent(keyword)}`;
+    await this.page.goto(url, { waitUntil: 'domcontentloaded' });
   }
 
   // Search + rovno otvorenie produktu.
   // Pri 1 vysledku obchod automaticky preskoci na detail, pri viacerych ostane
   // na search results - tato metoda zvlada oba pripady.
   async searchAndOpenProduct(keyword, productName) {
-    await this.searchInput.fill(keyword);
-    await this.searchInput.press('Enter');
-    await this.page.waitForURL(/rt=product\/(search|product)/);
+    await this.search(keyword);
 
     if (this.page.url().includes('rt=product/search')) {
       await this.page
@@ -36,7 +37,7 @@ class BasePage {
         .filter({ hasText: productName })
         .first()
         .click();
-      await this.page.waitForURL(/rt=product\/product/);
+      await this.page.waitForURL(/rt=product\/product/, { waitUntil: 'domcontentloaded' });
     }
   }
 

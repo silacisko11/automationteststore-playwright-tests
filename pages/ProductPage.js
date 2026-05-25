@@ -39,9 +39,10 @@ class ProductPage extends BasePage {
   }
 
   // Po kliknuti na "Add to Cart" obchod automaticky redirectne do kosika.
+  // waitUntil: 'domcontentloaded' - kvoli stabilite na Firefoxe (route.abort blokuje 'load').
   async addToCart() {
     await this.addToCartBtn.click();
-    await this.page.waitForURL(/checkout\/cart/);
+    await this.page.waitForURL(/checkout\/cart/, { waitUntil: 'domcontentloaded' });
   }
 }
 
